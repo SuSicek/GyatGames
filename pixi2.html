@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+    .logo-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+      }
+
+      .logo {
+            width: 200px;
+            height: auto;
+      }
+</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.3.10/pixi.min.js"></script>
+
+</head>
+<body>
+    <div class="logo-container">
+        <a  href="index.html">
+          <img src="logo.png" alt="Logo" class="logo">
+        </a>
+      </div>
+    <script>
+
+        let app = new PIXI.Application({ 
+            width: window.innerWidth, 
+            height: window.innerHeight,                       
+        });
+
+        document.body.appendChild(app.view);
+
+        const loader = new PIXI.Loader();
+
+        loader.add('player', 'knez.png')
+              .add('star', 'boy.png')
+              .add('background', 'kostel.jpg');
+
+        loader.load((loader, resources) => {
+
+            let player = new PIXI.Sprite(resources.player.texture);
+            
+            player.width = 200;
+            player.height = 100;
+
+            let background = new PIXI.Sprite(resources.background.texture);
+            background.width = app.screen.width;
+            background.height = app.screen.height;
+            app.stage.addChild(background);
+            
+            player.anchor.set(0.5);
+            player.x = app.screen.width / 2;
+            player.y = app.screen.height / 2;
+            app.stage.addChild(player);
+
+
+            let starsContainer = new PIXI.Container();
+            app.stage.addChild(starsContainer);
+
+            // Initialize score
+            let score = 0;
+            let scoreText = new PIXI.Text('Score: 0', { fontFamily: 'Arial', fontSize: 24, fill: 0xffffff });
+            scoreText.position.set(10, 10);
+            app.stage.addChild(scoreText);
+
+            // Function to spawn stars
+            function spawnStar() {
+                let star = new PIXI.Sprite(resources.star.texture);
+                star.tint = 0xffff00;
+                star.width = 100;
+                star.height = 100;
+                star.x = Math.random() * app.screen.width;
+                star.y = Math.random() * app.screen.height;
+                starsContainer.addChild(star);
+            }
+
+            // Spawn stars every 2 seconds
+            setInterval(spawnStar, 2000);
+
+            let left = keyboard("ArrowLeft"),
+                up = keyboard("ArrowUp"),
+                right = keyboard("ArrowRight"),
+                down = keyboard("ArrowDown");
+
+
+            player.vx = 0;
+            player.vy = 0;
+
+
+            left.press = () => {
+                player.vx = -5;
+                player.vy = 0;
+            };
+
+
+            up.press = () => {
+                player.vy = -5;
+                player.vx = 0;
+            };
+
+
+            right.press = () => {
+                player.vx = 5;
+                player.vy = 0;
+            };
+
+
+            down.press = () => {
+                player.vy = 5;
+                player.vx = 0;
+            };
+
+            app.ticker.add(() => {
+                player.x += player.vx;
+                player.y += player.vy;
+
+
+                player.x = Math.max(0, Math.min(app.screen.width, player.x));
+                player.y = Math.max(0, Math.min(app.screen.height, player.y));
+
+
+                starsContainer.children.forEach((star, index) => {
+                    if (hitTestRectangle(player, star)) {
+                        starsContainer.removeChild(star);
+                        // Increment score when player collects a star
+                        score++;
+                        scoreText.text = 'Score: ' + score;
+                    }
+                });
+            });
+
+
+            function keyboard(keyCode) {
+                let key = {};
+                key.code = keyCode;
+                key.isDown = false;
+                key.isUp = true;
+                key.press = undefined;
+                key.release = undefined;
+            
+
+                key.downHandler = event => {
+                    if (event.code === key.code) {
+                        if (key.isUp && key.press) key.press();
+                        key.isDown = true;
+                        key.isUp = false;
+                        event.preventDefault();
+                    }
+                };
+            
+
+                key.upHandler = event => {
+                    if (event.code === key.code) {
+                        if (key.isDown && key.release) key.release();
+                        key.isDown = false;
+                        key.isUp = true;
+                        event.preventDefault();
+                    }
+                };
+            
+
+                window.addEventListener(
+                    "keydown", key.downHandler.bind(key), false
+                );
+                window.addEventListener(
+                    "keyup", key.upHandler.bind(key), false
+                );
+            
+
+                return key;
+            }
+
+            function hitTestRectangle(sprite1, sprite2) {
+                let hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
+                hit = false;
+                sprite1.centerX = sprite1.x + sprite1.width / 2;
+                sprite1.centerY = sprite1.y + sprite1.height / 2;
+                sprite2.centerX = sprite2.x + sprite2.width / 2;
+                sprite2.centerY = sprite2.y + sprite2.height / 2;
+                sprite1.halfWidth = sprite1.width / 2;
+                sprite1.halfHeight = sprite1.height / 2;
+                sprite2.halfWidth = sprite2.width / 2;
+                sprite2.halfHeight = sprite2.height / 2;
+                vx = sprite1.centerX - sprite2.centerX;
+                vy = sprite1.centerY - sprite2.centerY;
+                combinedHalfWidths = sprite1.halfWidth + sprite2.halfWidth;
+                combinedHalfHeights = sprite1.halfHeight + sprite2.halfHeight;
+                if (Math.abs(vx) < combinedHalfWidths) {
+                    if (Math.abs(vy) < combinedHalfHeights) {
+                        hit = true;
+                    } else {
+                        hit = false;
+                    }
+                } else {
+                    hit = false;
+                }
+                return hit;
+            }
+        });
+    </script>
+</body>
+</html>

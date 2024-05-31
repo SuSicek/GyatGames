@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bruh</title>
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .logo-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+      }
+
+      .logo {
+            width: 200px;
+            height: auto;
+      }
+
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.3.10/pixi.min.js"></script>
+</head>
+<body>
+  <div class="logo-container">
+    <a  href="index.html">
+      <img src="logo.png" alt="Logo" class="logo">
+    </a>
+  </div>
+  <script>
+    
+    let app = new PIXI.Application({ 
+      width: 800,         
+      height: 600,        
+      antialias: true,    
+      transparent: false, 
+      resolution: 1       
+    });
+
+   
+    document.body.appendChild(app.view);
+
+
+    PIXI.Loader.shared.add('character', 'https://cdn2.iconfinder.com/data/icons/childrens-cartoon-2/512/d289_4-512.png')
+                     .add('fallingObject', 'https://cdn.pixabay.com/photo/2021/12/23/15/24/twin-towers-6889498_640.png')
+                     .load(setup);
+
+
+    let character;
+    let fallingObjects = [];
+    let score = 0;
+    let scoreText;
+
+    function setup() {
+
+      character = new PIXI.Sprite(PIXI.Loader.shared.resources.character.texture);
+      character.anchor.set(0.5);
+      character.scale.set(0.3); 
+      character.x = app.screen.width / 2;
+      character.y = app.screen.height - 100;
+      app.stage.addChild(character);
+
+      scoreText = new PIXI.Text('Score: ' + score, { fontFamily: 'Arial', fontSize: 24, fill: 0xFFFFFF });
+      scoreText.position.set(10, 10);
+      app.stage.addChild(scoreText);
+
+      app.ticker.add(gameLoop);
+
+      setInterval(createFallingObject, 1000);
+    }
+
+    function createFallingObject() {
+      let objectTexture = PIXI.Loader.shared.resources.fallingObject.texture;
+      let object = new PIXI.Sprite(objectTexture);
+      object.scale.set(0.15); 
+      object.x = Math.random() * app.screen.width;
+      object.y = 0;
+      app.stage.addChild(object);
+      fallingObjects.push(object);
+    }
+
+    function gameLoop(delta) {
+      for (let i = 0; i < fallingObjects.length; i++) {
+        fallingObjects[i].y += 5 * delta;
+
+        if (fallingObjects[i].y + fallingObjects[i].height > character.y - character.height / 2 &&
+            fallingObjects[i].y < character.y + character.height / 2 &&
+            fallingObjects[i].x + fallingObjects[i].width > character.x - character.width / 2 &&
+            fallingObjects[i].x < character.x + character.width / 2) {
+
+          app.stage.removeChild(fallingObjects[i]);
+          fallingObjects.splice(i, 1);
+          score++;
+          scoreText.text = 'Score: ' + score;
+        }
+
+        else if (fallingObjects[i].y > app.screen.height) {
+          app.stage.removeChild(fallingObjects[i]);
+          fallingObjects.splice(i, 1);
+        }
+      }
+    }
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') {
+        character.x -= 40;
+      } else if (event.key === 'ArrowRight') {
+        character.x += 40;
+      }
+    });
+  </script>
+</body>
+</html>
