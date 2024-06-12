@@ -3,4 +3,4 @@ co to bude delat: vice jednoduchych online her, uz existujicich, jen lepe zpří
 HTML: main kod//
 JavaScript: generator pozadi//
 CSS: styl//
-odkaz: http://http://gyatdinos.borec.cz
+odkaz: http://gyatdinos.borec.cz
